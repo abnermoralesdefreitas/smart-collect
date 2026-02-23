@@ -1,19 +1,25 @@
 import { createContext, useEffect, useState } from "react";
 
-export const ThemeContext = createContext();
+export const ThemeContext = createContext({
+  theme: "dark",
+  toggleTheme: () => {},
+});
+
+function getInitialTheme() {
+  const saved = localStorage.getItem("theme");
+  if (saved === "dark" || saved === "light") return saved;
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(getInitialTheme);
 
-  // Carrega tema salvo
   useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark" || saved === "light") setTheme(saved);
-  }, []);
+    const root = document.documentElement;
 
-  // Aplica tema no <html>
-  useEffect(() => {
-    const root = document.documentElement; // <html>
     if (theme === "dark") root.classList.add("dark");
     else root.classList.remove("dark");
 
@@ -21,7 +27,9 @@ export function ThemeProvider({ children }) {
   }, [theme]);
 
   function toggleTheme() {
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
+    setTheme((currentTheme) =>
+      currentTheme === "dark" ? "light" : "dark"
+    );
   }
 
   return (
@@ -30,3 +38,4 @@ export function ThemeProvider({ children }) {
     </ThemeContext.Provider>
   );
 }
+
